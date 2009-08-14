@@ -17,7 +17,8 @@ function GM_wait() {
   if (typeof unsafeWindow.jQuery == 'undefined') { 
     window.setTimeout(GM_wait,100);
   } else { 
-    $ = unsafeWindow.jQuery; letsJQuery();
+    $ = unsafeWindow.jQuery;
+	letsJQuery();
   }
 }
 
@@ -33,7 +34,7 @@ function letsJQuery() {
   }
 
   // set up some special keys
-  $.hotkeys.specialKeys = {'esc': 27, 'enter': 13}
+  $.hotkeys.specialKeys = {'esc': 27, 'enter': 13, 'alt+s': 1083, 'alt+w': 1087, 'shift+i': 2073, 'shift+u': 2085}
 
   // accepts a function or url
   $.hotkey = function(key, value) {
@@ -53,21 +54,35 @@ function letsJQuery() {
     $.hotkey($(this).attr('hotkey'), $(this).attr('href'))
   })
 
-  $(document).bind('keydown.hotkey', function(e) {
-    // don't hotkey when typing in an input
-    if ($(e.target).is(':input')) return
-    // no modifiers supported 
-    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return true
-    e.preventDefault()
-    var el = $.hotkeys.cache[e.keyCode]
-    if (el) $.isFunction(el) ? el.call(this) : window.location = el
+  //$(document).bind('keydown.hotkey', function(e) {
+  $(document).bind('keydown', function(e) {
+	// debug using firebug
+	console.log("keyCode: " + e.keyCode);
+	// don't hotkey when typing in an inputs
+    if ($(e.target).is(':input')) {
+		if (!e.altKey) return;
+	}
+
+    // some modifiers not supported 
+    if (e.ctrlKey || e.metaKey) return true
+
+	var lookup = (e.altKey) ? e.keyCode + 1000 : e.keyCode;
+	lookup = (e.shiftKey) ? lookup + 2000 : lookup;
+    var el = $.hotkeys.cache[lookup];
+    if (el) {
+		if ($.isFunction(el)) {
+			e.preventDefault();
+			el.call(this);
+		} else {
+			//window.location = el;
+		}
+	}
   })
   // end hotkeys plugin
   
   $.nav = {}
   
   $.nav.subfolder = function(title) {
-    console.log(title)
     if ($('a[title=' + title + ']'))
       return $('a[title=' + title + ']').attr('href')
     else
@@ -113,25 +128,33 @@ function letsJQuery() {
   }
       
   $.hotkeys({
+    'enter': function() { $.nav.open() },
+    'esc': function() { $.nav.esc() },
     '1': function() { $('a[title=Mail]').click() },
     '2': function() { $('a[title=Calendar]').click() },
     '3': function() { $('a[title=Contacts]').click() },
-    'n': function() { $('a.btn[title*=New]').click() },
+    'a': function() { $.nav.click('Reply to All') },
+    'c': function() { $.nav.click('Check Messages') },
+    'd': function() { $.nav.click('Delete') },
+    'e': function() { $.nav.click('Empty Deleted Items Folder') },
     'f': function() { $('#txtSch').focus() },
+    'h': function() { $.nav.page('Previous') },
     'j': function() { $.nav.go('next') },
     'k': function() { $.nav.go('prev') },
-    'x': function() { $('tr[current=current] :checkbox').click() },
-    'd': function() { $.nav.click('Delete') },
-    'u': function() { $.nav.click('Junk') },
-    'r': function() { $.nav.click('Reply') },
-    'a': function() { $.nav.click('Reply to All') },
-    'w': function() { $.nav.click('Forward') },
     'l': function() { $.nav.page('Next') },
-    'h': function() { $.nav.page('Previous') },
-    'enter': function() { $.nav.open() },
-    'esc': function() { $.nav.esc() }
+    'm': function() { $.nav.click('Move') },
+    'n': function() { $('a.btn[title*=New]').click() },
+    'q': function() { $.nav.click('Close') },
+    'r': function() { $.nav.click('Reply') },
+    'u': function() { $.nav.click('Junk') },
+    'v': function() { $.nav.click('Check Names') },
+    'w': function() { $.nav.click('Forward') },
+    'x': function() { $('tr[current=current] :checkbox').click() },
+    'alt+s': function() { $.nav.click('Send') },
+    'alt+w': function() { $.nav.click('Save') },
+    'shift+i': function() { $.nav.click('Mark as Read') },
+    'shift+u': function() { $.nav.click('Mark as Unread') }
 	})
-	  
 }
 
 letsJQuery()
